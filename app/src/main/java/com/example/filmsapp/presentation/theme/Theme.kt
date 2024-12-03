@@ -1,6 +1,5 @@
-package com.example.filmsapp.ui.theme
+package com.example.filmsapp.presentation.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
