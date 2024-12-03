@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.jetbrains.kotlin.kapt)
 }
 
 android {
@@ -41,6 +42,21 @@ android {
 
 dependencies {
 
+    // retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+
+    // room
+    implementation(libs.room.runtime)
+    kapt(libs.room.compiler)
+
+    // glide
+    implementation(libs.glide.compose)
+
+    // koin
+    implementation(libs.koin)
+
+    // android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -49,6 +65,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
