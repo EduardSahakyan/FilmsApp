@@ -8,7 +8,7 @@ sealed interface Resource<out T> {
 
 }
 
-sealed interface RootError<T> {
-    data class Error<T>(val throwable: Throwable, val data: T? = null) : RootError<T>
-    data class NetworkError<T>(val data: T? = null): RootError<T>
+sealed class RootError<T>(open val data: T?) {
+    data class Error<T>(val throwable: Throwable, override val data: T? = null) : RootError<T>(data)
+    data class NetworkError<T>(override val data: T? = null): RootError<T>(data)
 }

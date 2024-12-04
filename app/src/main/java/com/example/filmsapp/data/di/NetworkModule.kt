@@ -7,6 +7,7 @@ import com.example.filmsapp.data.network.HEADER_AUTH
 import okhttp3.OkHttpClient
 import org.koin.dsl.module
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 
 val networkModule = module {
@@ -28,6 +29,7 @@ val networkModule = module {
         Retrofit.Builder()
             .client(get())
             .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create()
     }
