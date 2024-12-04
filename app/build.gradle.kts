@@ -64,9 +64,6 @@ dependencies {
     implementation(libs.room.runtime)
     kapt(libs.room.compiler)
 
-    // glide
-    implementation(libs.glide.compose)
-
     // koin
     implementation(libs.koin)
 

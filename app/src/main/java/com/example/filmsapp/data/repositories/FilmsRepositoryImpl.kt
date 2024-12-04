@@ -3,6 +3,7 @@ package com.example.filmsapp.data.repositories
 import com.example.filmsapp.data.local.daos.FilmsDao
 import com.example.filmsapp.data.local.daos.GenresDao
 import com.example.filmsapp.data.mappers.toEntities
+import com.example.filmsapp.data.mappers.toFilm
 import com.example.filmsapp.data.mappers.toFilms
 import com.example.filmsapp.data.mappers.toGenres
 import com.example.filmsapp.data.network.ApiService
@@ -53,6 +54,10 @@ class FilmsRepositoryImpl(
 
     override suspend fun updateFavoriteStatus(filmId: Int, isFavorite: Boolean) {
         filmsDao.updateFavoriteStatus(filmId, isFavorite)
+    }
+
+    override suspend fun getFilmById(id: Int): Film? {
+        return filmsDao.getFilmById(id)?.toFilm()
     }
 
     private fun getOffset(page: Int) = (page - 1) * PER_PAGE

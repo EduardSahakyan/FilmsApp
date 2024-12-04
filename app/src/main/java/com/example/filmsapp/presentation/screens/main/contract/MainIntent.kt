@@ -12,4 +12,6 @@ sealed interface MainIntent {
 
     data object Refresh : MainIntent
 
+    data class FilmClicked(val id: Int) : MainIntent
+
 }

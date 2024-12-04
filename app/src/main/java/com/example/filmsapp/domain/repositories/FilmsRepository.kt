@@ -17,4 +17,6 @@ interface FilmsRepository {
 
     suspend fun updateFavoriteStatus(filmId: Int, isFavorite: Boolean)
 
+    suspend fun getFilmById(id: Int): Film?
+
 }

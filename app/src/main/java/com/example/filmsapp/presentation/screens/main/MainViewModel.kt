@@ -2,8 +2,7 @@ package com.example.filmsapp.presentation.screens.main
 
 import androidx.lifecycle.viewModelScope
 import com.example.filmsapp.domain.resource.Resource
-import com.example.filmsapp.domain.usecases.film.GetFilteredFilmsUseCase
-import com.example.filmsapp.domain.usecases.film.GetPopularFilmsUseCase
+import com.example.filmsapp.domain.usecases.film.GetFilmsUseCase
 import com.example.filmsapp.domain.usecases.film.SearchFilmsUseCase
 import com.example.filmsapp.domain.usecases.genre.GetGenresUseCase
 import com.example.filmsapp.presentation.base.BaseViewModel
@@ -26,8 +25,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MainViewModel(
-    private val getPopularFilmsUseCase: GetPopularFilmsUseCase,
-    private val getFilteredFilmsUseCase: GetFilteredFilmsUseCase,
+    private val getFilmsUseCase: GetFilmsUseCase,
     private val searchFilmsUseCase: SearchFilmsUseCase,
     private val getGenresUseCase: GetGenresUseCase
 ) : BaseViewModel<MainIntent, MainState, MainEffect>(initialState = MainState()) {
@@ -49,6 +47,7 @@ class MainViewModel(
             is MainIntent.SetGenre -> setGenre(intent.id)
             MainIntent.ToggleSearchMode -> toggleSearchMode()
             MainIntent.Refresh -> refresh()
+            is MainIntent.FilmClicked -> onFilmCLicked(intent.id)
         }
     }
 
@@ -57,12 +56,7 @@ class MainViewModel(
         if (loadingJob?.isActive == true) return
         currentPage++
         val selectedGenre = currentState.selectedGenre
-        val operation = if (selectedGenre == null) {
-            getPopularFilmsUseCase(currentPage)
-        } else {
-            getFilteredFilmsUseCase(selectedGenre, currentPage)
-        }
-        loadingJob = operation
+        loadingJob = getFilmsUseCase(currentPage, selectedGenre)
             .flowOn(Dispatchers.IO)
             .onEach { resource ->
                 when(resource) {
@@ -70,16 +64,25 @@ class MainViewModel(
                         updateState { state -> state.copy(isLoading = true) }
                     }
                     is Resource.Error -> {
-                        resource.error.data?.let {
-                            val films = currentState.films.toMutableSet()
-                            films.addAll(it.toListItems())
-                            updateState { state -> state.copy(films = films.toList()) }
+                        if (resource.error.data.isNullOrEmpty()) {
+                            sendEffect(MainEffect.ShowConnectionErrorToast)
+                            currentPage--
+                        } else {
+                            resource.error.data?.let {
+                                val films = currentState.films.toMutableSet()
+                                films.addAll(it.toListItems())
+                                updateState { state -> state.copy(films = films.toList()) }
+                            }
                         }
                     }
                     is Resource.Success -> {
-                        val films = currentState.films.toMutableSet()
-                        films.addAll(resource.data.toListItems())
-                        updateState { state -> state.copy(films = films.toList()) }
+                        if (resource.data.isEmpty()) {
+                            currentPage--
+                        } else {
+                            val films = currentState.films.toMutableSet()
+                            films.addAll(resource.data.toListItems())
+                            updateState { state -> state.copy(films = films.toList()) }
+                        }
                     }
                 }
             }
@@ -133,6 +136,7 @@ class MainViewModel(
                 }
             }
             .onCompletion {
+                sendEffect(MainEffect.ScrollToTop)
                 delay(REFRESH_INDICATOR_DELAY)
                 updateState { state -> state.copy(isLoading = false) }
             }
@@ -147,13 +151,18 @@ class MainViewModel(
     }
 
     private fun refresh() {
-        loadGenres()
         updateState { state -> state.copy(films = emptyList()) }
         if (currentState.searchMode) {
             searchFilms(currentState.searchQuery)
         } else {
             currentPage = 0
             loadNextPage()
+        }
+    }
+
+    private fun onFilmCLicked(id: Int) {
+        viewModelScope.launch {
+            sendEffect(MainEffect.NavigateToDetails(id))
         }
     }
 
